@@ -175,7 +175,9 @@
     
         <li class="main active"><a href="#generating-representations">Generating Representations</a></li>
         
-            <li><a href="#creating-the-factory">Creating the factory</a></li>
+            <li><a href="#renderers">Renderers</a></li>
+        
+            <li><a href="#halresponsefactory">HalResponseFactory</a></li>
         
             <li><a href="#using-the-factory">Using the factory</a></li>
         
@@ -208,17 +210,49 @@
 </ol>
 
 <h1 id="generating-representations">Generating Representations</h1>
-<p>As noted in the <a href="../intro/">introduction</a> examples, this component provides
-<code>Hal\HalResponseFactory</code> for generating a PSR-7 response containing the HAL
-representation. This chapter dives into that with more detail.</p>
-<h2 id="creating-the-factory">Creating the factory</h2>
+<p>This component provides two renderers, one each for creating JSON and XML
+payloads.</p>
+<p>Additionally, as noted in the <a href="../intro/">introduction</a> examples, this component
+provides <code>Hal\HalResponseFactory</code> for generating a PSR-7 response containing the
+HAL representation. This chapter dives into that with more detail.</p>
+<h2 id="renderers">Renderers</h2>
+<p>All renderers implement <code>Hal\Renderer\Renderer</code>:</p>
+<pre class="codehilite"><code class="language-php">namespace Hal\Renderer;
+
+use Hal\HalResource;
+
+interface Renderer
+{
+    public function render(HalResource $resource) : string;
+}</code></pre>
+
+
+<p>Two implementations are provided, <code>Hal\Renderer\JsonRenderer</code> and
+<code>Hal\Renderer\XmlRenderer</code></p>
+<h3 id="jsonrenderer">JsonRenderer</h3>
+<p>The <code>JsonRenderer</code> constructor allows you to specify a bitmask of flags for use
+with <code>json_encode()</code>. By default, if none are provided, it uses the value of
+<code>JsonRenderer::DEFAULT_JSON_FLAGS</code>, which evaluates to:</p>
+<pre class="codehilite"><code class="language-php">JSON_PRETTY_PRINT
+| JSON_UNESCAPED_SLASHES
+| JSON_UNESCAPED_UNICODE
+| JSON_PRESERVE_ZERO_FRACTION</code></pre>
+
+
+<p>This provides human-readable JSON output.</p>
+<h3 id="xmlrenderer">XmlRenderer</h3>
+<p>The <code>XmlRenderer</code> produces XML representations of HAL resources. It has no
+constructor arguments at this time.</p>
+<h2 id="halresponsefactory">HalResponseFactory</h2>
 <p><code>HalResponseFactory</code> generates a PSR-7 response containing a representation of
 the provided <code>HalResource</code> instance. In order to keep the component agnostic of
-PSR-7 implement, the factory composes:</p>
+PSR-7 implementation, the factory composes:</p>
 <ul>
-<li>JSON flags to use when generating a JSON representation.</li>
-<li>A PSR-7 response prototype.</li>
-<li>A callable capable of generating an empty, writable, PSR-7 stream instance.</li>
+<li>A PSR-7 response prototype. A zend-diactoros <code>Response</code> is used if none is
+  provided.</li>
+<li>A callable capable of generating an empty, writable, PSR-7 stream instance.
+  If none is provided, a callable returning a zend-diactoros <code>Stream</code> is
+  provided.</li>
 </ul>
 <p>As an example:</p>
 <pre class="codehilite"><code class="language-php">use Hal\HalResponseFactory;
@@ -226,7 +260,6 @@ use Slim\Http\Response;
 use Slim\Http\Stream;
 
 $factory = new HalResponseFactory(
-    HalResponseFactory::DEFAULT_JSON_FLAGS,
     new Response(),
     function () {
         return new Stream(fopen('php://temp', 'wb+'));
@@ -243,11 +276,11 @@ thus potentially lead to appending or overwriting contents!</p>
 <p>By default, if you pass no arguments to the <code>HalResponseFactory</code> constructor, it
 assumes the following:</p>
 <ul>
-<li>Usage of the JSON flags <code>JSON_PRETTY_PRINT</code>, <code>JSON_UNESCAPED_SLASHES</code>,
-  <code>JSON_UNESCAPED_UNICODE</code>, and <code>JSON_PRESERVE_ZERO_FRACTION</code>.</li>
 <li>Usage of <code>Zend\Diactoros\Response</code>.</li>
 <li>A callable that returns a new <code>Zend\Diactoros\Stream</code> using <code>php://temp</code> as
   its backing resource.</li>
+<li>A <code>JsonRenderer</code> instance is created if none is provided.</li>
+<li>An <code>XmlRenderer</code> instance is created if none is provided.</li>
 </ul>
 <p>We provide a PSR-11 compatible factory for generating the <code>HalResponseFactory</code>
 which uses zend-diactoros by default.</p>
