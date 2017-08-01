@@ -341,18 +341,15 @@ use Hal\Link;
 use Hal\Renderer\JsonRenderer;
 use Interop\Http\ServerMiddleware\DelegateInterface;
 use Interop\Http\ServerMiddleware\MiddlewareInterface;
-use Psr\Http\ServerRequestInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 use Zend\Diactoros\Response\TextResponse;
-
-class BookAction
+class BookAction implements MiddlewareInterface
 {
     /** @var JsonRenderer */
     private $renderer;
-
     /** @var Repository */
     private $repository;
-
     public function __construct(
         Repository $repository,
         JsonRenderer $renderer
@@ -360,24 +357,19 @@ class BookAction
         $this-&gt;repository = $repository;
         $this-&gt;renderer = $renderer;
     }
-
-    public function __invoke(ServerRequestInterface $request, DelegateInterface $delegate)
+    public function process(ServerRequestInterface $request, DelegateInterface $delegate)
     {
         $id = $request-&gt;getAttribute('id', false);
         if (! $id) {
             throw new RuntimeException('No book identifier provided', 400);
         }
-
-        /** @var \Api\Books\Book $book */
         $book = $this-&gt;repository-&gt;get($id);
-
         $resource = new HalResource((array) $book);
-        $resource = $resource-&gt;addLink(new Link('self', (string) $request));
-
+        $resource = $resource-&gt;withLink(new Link('self'));
         return new TextResponse(
             $this-&gt;renderer-&gt;render($resource),
             200,
-            ['Content-Type', 'application/hal+json']
+            ['Content-Type' =&gt; 'application/hal+json']
         );
     }
 }</code></pre>
