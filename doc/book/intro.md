@@ -233,10 +233,10 @@ use Hal\HalResponseFactory;
 use Hal\ResourceGenerator;
 use Interop\Http\ServerMiddleware\DelegateInterface;
 use Interop\Http\ServerMiddleware\MiddlewareInterface;
-use Psr\Http\ServerRequestInterface;
+use Psr\Http\Messager\ServerRequestInterface;
 use RuntimeException;
 
-class BookAction
+class BookAction implements MiddlewareInterface
 {
     /** @var Repository */
     private $repository;
@@ -257,7 +257,7 @@ class BookAction
         $this->responseFactory = $responseFactory;
     }
 
-    public function __invoke(ServerRequestInterface $request, DelegateInterface $delegate)
+    public function process(ServerRequestInterface $request, DelegateInterface $delegate)
     {
         $id = $request->getAttribute('id', false);
         if (! $id) {
@@ -285,7 +285,7 @@ The generated payload might look like the following:
 ```json
 {
     "_links": {
-        "self": { "href": "/api/books/1234" }
+        "self": [ { "href": "/api/books/1234" } ]
     },
     "id": 1234,
     "title": "Hitchhiker's Guide to the Galaxy",
@@ -308,10 +308,10 @@ use Hal\HalResponseFactory;
 use Hal\ResourceGenerator;
 use Interop\Http\ServerMiddleware\DelegateInterface;
 use Interop\Http\ServerMiddleware\MiddlewareInterface;
-use Psr\Http\ServerRequestInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 
-class BooksAction
+class BooksAction implements MiddlewareInterface
 {
     /** @var Repository */
     private $repository;
@@ -332,7 +332,7 @@ class BooksAction
         $this->responseFactory = $responseFactory;
     }
 
-    public function __invoke(ServerRequestInterface $request, DelegateInterface $delegate)
+    public function process(ServerRequestInterface $request, DelegateInterface $delegate)
     {
         $page = $request->getQueryParams()['page'] ?? 1;
 
@@ -358,21 +358,23 @@ class, we might get back something like the following:
 ```json
 {
     "_links": {
-        "self": { "href": "/api/books?page=7" },
-        "first": { "href": "/api/books?page=1" },
-        "prev": { "href": "/api/books?page=6" },
-        "next": { "href": "/api/books?page=8" },
-        "last": { "href": "/api/books?page=17" }
-        "search": {
-            "href": "/api/books?query={searchTerms}",
-            "templated": true
-        }
+        "self": [ { "href": "/api/books?page=7" } ],
+        "first": [ { "href": "/api/books?page=1" } ],
+        "prev": [ { "href": "/api/books?page=6" } ],
+        "next": [ { "href": "/api/books?page=8" } ],
+        "last": [ { "href": "/api/books?page=17" } ]
+        "search": [
+            {
+                "href": "/api/books?query={searchTerms}",
+                "templated": true
+            }
+        ]
     },
     "_embedded": {
         "book": [
             {
                 "_links": {
-                    "self": { "href": "/api/books/1234" }
+                    "self": [ { "href": "/api/books/1234" } ]
                 }
                 "id": 1234,
                 "title": "Hitchhiker's Guide to the Galaxy",
@@ -380,7 +382,7 @@ class, we might get back something like the following:
             },
             {
                 "_links": {
-                    "self": { "href": "/api/books/6789" }
+                    "self": [ { "href": "/api/books/6789" } ]
                 }
                 "id": 6789,
                 "title": "Ancillary Justice",

@@ -77,6 +77,22 @@ properties allowed. As an example:
 At this point, the consumer knows they can access the current resource via the
 "self" relation, and a collection of "books" via the URI "/api/books".
 
+To make client consumption simpler, **this project has chosen to always
+represent links as arrays of link objects** and never as a single link object.
+As such, the above will render as:
+
+```json
+{
+  "_links": {
+    "self": [ { "href": "/api/books/XXXX-YYYY-ZZZZ-AAAA" } ],
+    "books": [ { "href": "/api/books" } ]
+  }
+}
+```
+
+This approach ensures that clients do not need to first test the _type_ returned
+when accessing a link relation; they can instead immediately start iterating.
+
 HAL addresses links in XML with two semantics. First, the `<resource>` element
 can contain linking information, using the "rel" and "href" attributes (and any
 others necessary to describe the link).  Typically, the "self" relational link
@@ -113,21 +129,23 @@ and optionally an `_embedded` member.
 ```json
 {
     "_links": {
-        "self": { "href": "/api/books?page=7" },
-        "first": { "href": "/api/books?page=1" },
-        "prev": { "href": "/api/books?page=6" },
-        "next": { "href": "/api/books?page=8" },
-        "last": { "href": "/api/books?page=17" }
-        "search": {
-            "href": "/api/books?query={searchTerms}",
-            "templated": true
-        }
+        "self": [ { "href": "/api/books?page=7" } ],
+        "first": [ { "href": "/api/books?page=1" } ],
+        "prev": [ { "href": "/api/books?page=6" } ],
+        "next": [ { "href": "/api/books?page=8" } ],
+        "last": [ { "href": "/api/books?page=17" } ]
+        "search": [
+          {
+              "href": "/api/books?query={searchTerms}",
+              "templated": true
+          }
+        ]
     },
     "_embedded": {
         "book": [
             {
                 "_links": {
-                    "self": { "href": "/api/books/1234" }
+                    "self": [ { "href": "/api/books/1234" } ]
                 }
                 "id": 1234,
                 "title": "Hitchhiker's Guide to the Galaxy",
@@ -135,7 +153,7 @@ and optionally an `_embedded` member.
             },
             {
                 "_links": {
-                    "self": { "href": "/api/books/6789" }
+                    "self": [ { "href": "/api/books/6789" } ]
                 }
                 "id": 6789,
                 "title": "Ancillary Justice",
@@ -150,6 +168,12 @@ and optionally an `_embedded` member.
 ```
 
 The above represents a _collection_ of _book_ resources.
+
+To provide consistency to clients, **this project chooses to always embed
+resources as arrays of resources** and never as a single resource object.
+Similar to links, this ensures that clients of your API do not need to test the
+_type_ of an embedded resource prior to processing; they can simply start
+iterating or using array operations.
 
 To address XML, the specification uses the `<resource>` element to embed
 additional resources. Resources of the same type use the same `rel` attribute.

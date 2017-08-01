@@ -39,11 +39,11 @@ class HalResourceTest extends TestCase
     {
         $embedded = new HalResource(['foo' => 'bar']);
         $resource = new HalResource(['foo' => $embedded]);
-        $this->assertEquals(['foo' => $embedded], $resource->getElements());
+        $this->assertEquals(['foo' => [$embedded]], $resource->getElements());
         $representation = $resource->toArray();
         $this->assertArrayHasKey('_embedded', $representation);
         $this->assertArrayHasKey('foo', $representation['_embedded']);
-        $this->assertEquals(['foo' => 'bar'], $representation['_embedded']['foo']);
+        $this->assertEquals([['foo' => 'bar']], $representation['_embedded']['foo']);
     }
 
     public function testCanConstructWithLinks()
@@ -71,11 +71,11 @@ class HalResourceTest extends TestCase
     {
         $embedded = new HalResource(['foo' => 'bar']);
         $resource = new HalResource([], [], ['foo' => $embedded]);
-        $this->assertEquals(['foo' => $embedded], $resource->getElements());
+        $this->assertEquals(['foo' => [$embedded]], $resource->getElements());
         $representation = $resource->toArray();
         $this->assertArrayHasKey('_embedded', $representation);
         $this->assertArrayHasKey('foo', $representation['_embedded']);
-        $this->assertEquals(['foo' => 'bar'], $representation['_embedded']['foo']);
+        $this->assertEquals([['foo' => 'bar']], $representation['_embedded']['foo']);
     }
 
     public function testNonResourceOrCollectionItemsRaiseExceptionDuringConstruction()
@@ -194,11 +194,11 @@ class HalResourceTest extends TestCase
         $new = $resource->withElement('foo', $embedded);
         $this->assertNotSame($resource, $new);
         $this->assertEquals([], $resource->getElements());
-        $this->assertEquals(['foo' => $embedded], $new->getElements());
+        $this->assertEquals(['foo' => [$embedded]], $new->getElements());
         $representation = $new->toArray();
         $this->assertArrayHasKey('_embedded', $representation);
         $this->assertArrayHasKey('foo', $representation['_embedded']);
-        $this->assertEquals(['foo' => 'bar'], $representation['_embedded']['foo']);
+        $this->assertEquals([['foo' => 'bar']], $representation['_embedded']['foo']);
     }
 
     public function testWithElementProxiesToEmbedIfResourceCollectionValueProvided()
@@ -241,7 +241,7 @@ class HalResourceTest extends TestCase
         $new = $resource->embed('foo', $embedded);
         $this->assertNotSame($resource, $new);
         $this->assertEquals([], $resource->getElements());
-        $this->assertEquals(['foo' => $embedded], $new->getElements());
+        $this->assertEquals(['foo' => [$embedded]], $new->getElements());
     }
 
     public function testEmbedReturnsNewInstanceWithEmbeddedCollection()
@@ -266,7 +266,7 @@ class HalResourceTest extends TestCase
         $resource = new HalResource(['foo' => $resource1]);
         $new = $resource->embed('foo', $resource2);
         $this->assertNotSame($resource, $new);
-        $this->assertEquals(['foo' => $resource1], $resource->getElements());
+        $this->assertEquals(['foo' => [$resource1]], $resource->getElements());
         $this->assertEquals(['foo' => [$resource1, $resource2]], $new->getElements());
     }
 
@@ -352,11 +352,11 @@ class HalResourceTest extends TestCase
         $new = $resource->withElements(['foo' => $embedded]);
         $this->assertNotSame($resource, $new);
         $this->assertEquals([], $resource->getElements());
-        $this->assertEquals(['foo' => $embedded], $new->getElements());
+        $this->assertEquals(['foo' => [$embedded]], $new->getElements());
         $representation = $new->toArray();
         $this->assertArrayHasKey('_embedded', $representation);
         $this->assertArrayHasKey('foo', $representation['_embedded']);
-        $this->assertEquals(['foo' => 'bar'], $representation['_embedded']['foo']);
+        $this->assertEquals([['foo' => 'bar']], $representation['_embedded']['foo']);
     }
 
     public function testWithElementsOverwritesExistingDataInNewResourceInstance()
@@ -376,7 +376,7 @@ class HalResourceTest extends TestCase
         $new = $resource->withElements(['foo' => $resource2]);
 
         $this->assertNotSame($resource, $new);
-        $this->assertEquals(['foo' => $resource1], $resource->getElements());
+        $this->assertEquals(['foo' => [$resource1]], $resource->getElements());
         $this->assertEquals(['foo' => [$resource1, $resource2]], $new->getElements());
     }
 
@@ -402,7 +402,7 @@ class HalResourceTest extends TestCase
         $resource = new HalResource(['foo' => $embedded]);
         $new = $resource->withoutElement('foo');
         $this->assertNotSame($resource, $new);
-        $this->assertEquals(['foo' => $embedded], $resource->getElements());
+        $this->assertEquals(['foo' => [$embedded]], $resource->getElements());
         $this->assertEquals([], $new->getElements());
     }
 
@@ -447,7 +447,7 @@ class HalResourceTest extends TestCase
             'id'  => 12345678,
             '_links' => [
                 'self' => [
-                    'href' => '/api/foo',
+                    ['href' => '/api/foo'],
                 ],
                 'about' => [
                     ['href' => '/doc/about'],
@@ -456,9 +456,11 @@ class HalResourceTest extends TestCase
             ],
             '_embedded' => [
                 'bar' => [
-                    'bar' => 'baz',
-                    '_links' => [
-                        'self' => ['href' => '/api/bar'],
+                    [
+                        'bar' => 'baz',
+                        '_links' => [
+                            'self' => [['href' => '/api/bar']],
+                        ],
                     ],
                 ],
                 'baz' => [
@@ -466,14 +468,14 @@ class HalResourceTest extends TestCase
                         'baz' => 'bat',
                         'id'  => 987654,
                         '_links' => [
-                            'self' => ['href' => '/api/baz/987654'],
+                            'self' => [['href' => '/api/baz/987654']],
                         ],
                     ],
                     [
                         'baz' => 'bat',
                         'id'  => 987653,
                         '_links' => [
-                            'self' => ['href' => '/api/baz/987653'],
+                            'self' => [['href' => '/api/baz/987653']],
                         ],
                     ],
                 ],

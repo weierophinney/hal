@@ -26,18 +26,9 @@ class XmlRenderer implements Renderer
         $node = $doc->createElement('resource');
 
         // Self-relational link attributes, if present and singular
-        if (isset($resource['_links']['self']['href'])) {
-            $node->setAttribute('rel', $resourceRel);
-            $node->setAttribute('href', $resource['_links']['self']['href']);
-            foreach ($resource['_links']['self'] as $attribute => $value) {
-                if ($attribute === 'href') {
-                    continue;
-                }
-                $node->setAttribute($attribute, $value);
-            }
-            unset($resource['_links']['self']);
-        }
+        $resource = $this->injectSelfRelationalLink($resourceRel, $resource, $node);
 
+        // All other links, including multiple "self" links
         foreach ($resource['_links'] as $rel => $linkData) {
             if ($this->isAssocArray($linkData)) {
                 $node->appendChild($this->createLinkNode($doc, $rel, $linkData));
@@ -136,5 +127,44 @@ class XmlRenderer implements Renderer
         }
 
         return $node;
+    }
+
+    /**
+     * Attempts to inject the "self" relational link into the resource node.
+     *
+     * Uses the provided `$rel` in place of "self" during injection.
+     *
+     * Returns an updated $resource, minus the self relational link if it was
+     * found and injected.
+     */
+    private function injectSelfRelationalLink(string $rel, array $resource, DOMNode $node) : array
+    {
+        // No self link, or multiple self links
+        if (! isset($resource['_links']['self'])
+            || 1 < count($resource['_links']['self'])
+        ) {
+            return $resource;
+        }
+
+        $link = array_shift($resource['_links']['self']);
+
+        // self link has no href
+        if (! isset($link['href'])) {
+            $resource['_links']['self'][] = $link;
+            return $resource;
+        }
+
+        unset($resource['_links']['self']);
+
+        $node->setAttribute('rel', $rel);
+        $node->setAttribute('href', $link['href']);
+        foreach ($link as $attribute => $value) {
+            if ($attribute === 'href') {
+                continue;
+            }
+            $node->setAttribute($attribute, $value);
+        }
+
+        return $resource;
     }
 }
