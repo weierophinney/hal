@@ -49,6 +49,8 @@ class ResourceWithNestedInstancesTest extends TestCase
         $this->assertInstanceOf(HalResource::class, $resource);
 
         $childResource = $resource->getElement('bar');
+        $this->assertInternalType('array', $childResource);
+        $childResource = array_shift($childResource);
         $this->assertInstanceOf(HalResource::class, $childResource);
         $this->assertEquals($child->id, $childResource->getElement('id'));
         $this->assertEquals($child->message, $childResource->getElement('message'));

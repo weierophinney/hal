@@ -40,7 +40,7 @@ class HalResource implements EvolvableLinkProviderInterface, JsonSerializable
         array_walk($data, function ($value, $name) use ($context) {
             $this->validateElementName($name, $context);
             if ($value instanceof self || $this->isResourceCollection($value, $name, $context)) {
-                $this->embedded[$name] = $value;
+                $this->embedded[$name] = is_array($value) ? $value : [$value];
                 return;
             }
             $this->data[$name] = $value;
@@ -56,7 +56,7 @@ class HalResource implements EvolvableLinkProviderInterface, JsonSerializable
                     $name
                 ));
             }
-            $this->embedded[$name] = $resource;
+            $this->embedded[$name] = is_array($resource) ? $resource : [$resource];
         });
 
         if (array_reduce($links, function ($containsNonLinkItem, $link) {
@@ -287,23 +287,12 @@ class HalResource implements EvolvableLinkProviderInterface, JsonSerializable
     private function aggregateEmbeddedResource(string $name, $resource, string $context)
     {
         if (! isset($this->embedded[$name])) {
-            return $resource;
+            return is_array($resource) ? $resource : [$resource];
         }
 
-        // $resource is an collection; existing individual or collection resource exists
+        // $resource is a collection; existing individual or collection resource exists
         if (is_array($resource)) {
             return $this->aggregateEmbeddedCollection($name, $resource, $context);
-        }
-
-        // $resource is a Resource; existing resource is also a Resource
-        if ($this->embedded[$name] instanceof self) {
-            $this->compareResources(
-                $this->embedded[$name],
-                $resource,
-                $name,
-                $context
-            );
-            return [$this->embedded[$name], $resource];
         }
 
         // $resource is a Resource; existing collection present
@@ -388,11 +377,9 @@ class HalResource implements EvolvableLinkProviderInterface, JsonSerializable
     {
         $embedded = [];
         array_walk($this->embedded, function ($resource, $name) use (&$embedded) {
-            $embedded[$name] = $resource instanceof self
-                ? $resource->toArray()
-                : array_map(function ($item) {
-                    return $item->toArray();
-                }, $resource);
+            $embedded[$name] = array_map(function ($item) {
+                return $item->toArray();
+            }, $resource);
         });
 
         return $embedded;
