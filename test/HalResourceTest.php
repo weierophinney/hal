@@ -447,7 +447,7 @@ class HalResourceTest extends TestCase
             'id'  => 12345678,
             '_links' => [
                 'self' => [
-                    'href' => '/api/foo',
+                    ['href' => '/api/foo'],
                 ],
                 'about' => [
                     ['href' => '/doc/about'],
@@ -458,7 +458,7 @@ class HalResourceTest extends TestCase
                 'bar' => [
                     'bar' => 'baz',
                     '_links' => [
-                        'self' => ['href' => '/api/bar'],
+                        'self' => [['href' => '/api/bar']],
                     ],
                 ],
                 'baz' => [
@@ -466,14 +466,14 @@ class HalResourceTest extends TestCase
                         'baz' => 'bat',
                         'id'  => 987654,
                         '_links' => [
-                            'self' => ['href' => '/api/baz/987654'],
+                            'self' => [['href' => '/api/baz/987654']],
                         ],
                     ],
                     [
                         'baz' => 'bat',
                         'id'  => 987653,
                         '_links' => [
-                            'self' => ['href' => '/api/baz/987653'],
+                            'self' => [['href' => '/api/baz/987653']],
                         ],
                     ],
                 ],

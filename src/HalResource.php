@@ -363,7 +363,7 @@ class HalResource implements EvolvableLinkProviderInterface, JsonSerializable
 
     private function serializeLinks()
     {
-        $relations = array_reduce($this->links, function (array $byRelation, LinkInterface $link) {
+        return array_reduce($this->links, function (array $byRelation, LinkInterface $link) {
             $representation = array_merge($link->getAttributes(), [
                 'href' => $link->getHref(),
             ]);
@@ -382,12 +382,6 @@ class HalResource implements EvolvableLinkProviderInterface, JsonSerializable
 
             return $byRelation;
         }, []);
-
-        array_walk($relations, function ($links, $key) use (&$relations) {
-            $relations[$key] = 1 === count($links) ? array_shift($links) : $links;
-        });
-
-        return $relations;
     }
 
     private function serializeEmbeddedResources()
