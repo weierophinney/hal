@@ -1,5 +1,10 @@
 # Hypertext Application Language (HAL) for PSR-7 Applications
 
+> ## ABANDONED
+>
+> Please use the package [zendframework/zend-expressive-hal](https://github.com/zendframework/zend-expressive-hal)
+> instead, as development has moved to that repository.
+
 [![Build Status](https://secure.travis-ci.org/weierophinney/hal.svg?branch=master)](https://secure.travis-ci.org/weierophinney/hal)
 [![Coverage Status](https://coveralls.io/repos/github/weierophinney/hal/badge.svg?branch=master)](https://coveralls.io/github/weierophinney/hal?branch=master)
 
